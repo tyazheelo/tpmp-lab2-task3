@@ -6,7 +6,19 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      
+    - name: Install Command Line Tools
+      run: |
+        sudo xcode-select --install 2>&1 || true
+        sudo xcode-select --switch /Library/Developer/CommandLineTools || true
+        
+    - name: Verify SDK exists
+      run: |
+        ls -la /Library/Developer/CommandLineTools/SDKs/
+        xcode-select -p
+        
     - name: Build with Make
       run: make
+      
     - name: Run the program
       run: ./my_program
