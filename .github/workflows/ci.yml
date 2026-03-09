@@ -3,37 +3,13 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: macos-latest
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Install Command Line Tools
-      run: |
-        sudo xcode-select --install 2>&1 || true
-        sudo xcode-select --switch /Library/Developer/CommandLineTools || true
-        
-    - name: Create directories
-      run: |
-        mkdir -p obj bin
-        echo "Created obj/ and bin/ directories"
-        
     - name: Build with Make
-      run: |
-        make
-        echo "=== Build complete ==="
-        echo "Contents of bin directory:"
-        ls -la bin/
-        echo "Contents of obj directory:"
-        ls -la obj/
-        
-    - name: Run the program
-      run: |
-        if [ -f "./bin/worker" ]; then
-          echo "Running ./bin/worker"
-          ./bin/worker
-        else
-          echo "Error: ./bin/worker not found!"
-          echo "Searching for any executable..."
-          find . -type f -executable -name "worker" -o -name "*.out" 2>/dev/null
-          exit 1
-        fi
+      run: make
+      
+    - name: Run the program (optional)
+      run: ./bin/worker
