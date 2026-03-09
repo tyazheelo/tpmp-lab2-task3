@@ -8,8 +8,7 @@ void input_workers(struct WORKER2 workers[], int *count, int max_size) {
     scanf("%d", count);
     
     if (*count > max_size) {
-        printf("Слишком много работников! Устанавливаем максимальное 
-значение %d\n", max_size);
+        printf("Слишком много работников! Устанавливаем максимальное значение %d\n", max_size);
         *count = max_size;
     }
     
@@ -40,16 +39,16 @@ void find_recent_contract(struct WORKER2 workers[], int count) {
     struct tm tm = *localtime(&t);
     int current_year = tm.tm_year + 1900;
     int current_month = tm.tm_mon + 1;
-    int current_day = tm.tm_mday;
     
     printf("\nРаботники, подписавшие контракт менее года назад:\n");
-    printf("%-5s %-15s %-15s %-10s\n", "Код", "Фамилия", "Должность", 
-"Дата контракта");
+    printf("%-5s %-15s %-15s %-10s\n", "Код", "Фамилия", "Должность", "Дата контракта");
     int found = 0;
     for (int i = 0; i < count; i++) {
         int years_diff = current_year - workers[i].contract_date.year;
         int months_diff = current_month - workers[i].contract_date.month;
-        if (years_diff == 0 || (years_diff == 1 && months_diff < 0)) {
+        int total_months_diff = years_diff * 12 + months_diff;
+        
+        if (total_months_diff < 12 && total_months_diff >= 0) {
             printf("%-5d %-15s %-15s %04d-%02d-%02d\n",
                    workers[i].code,
                    workers[i].lastname,
@@ -68,10 +67,26 @@ void find_recent_contract(struct WORKER2 workers[], int count) {
 
 void find_double_contract(struct WORKER2 workers[], int count) {
     printf("\nРаботники, с которыми дважды заключали контракт:\n");
-    printf("%-5s %-15s %-15s %-10s\n", "Код", "Фамилия", "Должность", 
+    printf("%-5s %-15s %-15s %-10s\n", "Код", "Фамилия", "Должность", "Срок (мес)"); 
     int found = 0;
+    
+    // Массив для отслеживания уже выведенных работников
+    int printed[100] = {0};
+    
     for (int i = 0; i < count; i++) {
-        if (workers[i].contract_term < 12) {
+        if (printed[i]) continue;
+        
+        int contract_count = 1;
+        
+        for (int j = i + 1; j < count; j++) {
+            if (strcmp(workers[i].lastname, workers[j].lastname) == 0 && 
+                strcmp(workers[i].position, workers[j].position) == 0) {
+                contract_count++;
+                printed[j] = 1;
+            }
+        }
+        
+        if (contract_count >= 2) {
             printf("%-5d %-15s %-15s %8d\n",
                    workers[i].code,
                    workers[i].lastname,
@@ -85,8 +100,8 @@ void find_double_contract(struct WORKER2 workers[], int count) {
         printf("Таких работников нет.\n");
     }
 }
-float avg_contract_term_by_position(struct WORKER2 workers[], int count, 
-char* position) {
+
+float avg_contract_term_by_position(struct WORKER2 workers[], int count, char* position) {
     float sum = 0;
     int found = 0;
     

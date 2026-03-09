@@ -1,13 +1,27 @@
 # Makefile for tpmp-lab2-task3 project
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
+INC_DIR = include
 
-worker2: main.o worker2.o
-	gcc -o worker main.o worker2.o
+SOURCES = $(wildcard $(SRC_DIR)/*.c)
+OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
+TARGET = $(BIN_DIR)/worker
 
-main.o: main.c
-	gcc -c main.c
+CFLAGS = -I$(INC_DIR)
 
-worker2.o: worker2.c
-	gcc -c worker2.c
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	gcc $^ -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	gcc -c $(CFLAGS)  -MD $< -o $@
 
 clean:
-	rm -f *.o worker2
+	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/*.d
+	rm -f $(TARGET)
+
+-include $(wildcard $(OBJ_DIR)/*.d)
+
+.PHONY: all clean

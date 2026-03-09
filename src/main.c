@@ -20,15 +20,13 @@ int main() {
     printf("Введите должность для поиска: ");
     scanf("%s", search_position);
     
-    float avg = avg_contract_term_by_position(workers, count, 
-search_position);
+    float avg = avg_contract_term_by_position(workers, count, search_position);
     if (avg > 0) {
-        printf("Средний срок контракта для должности '%s': %.2f 
-месяцев\n", 
+        printf("Средний срок контракта для должности '%s': %.2f месяцев\n", 
                search_position, avg);
     }
     
-    printf("\n Статистика по полу\n");
+    printf("\nСтатистика по полу\n");
     count_by_sex(workers, count);
     
     return 0;

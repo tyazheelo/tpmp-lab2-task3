@@ -1,0 +1,108 @@
+
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc make
+    
+    - name: Show directory structure
+      run: |
+        pwd
+        ls -la
+        echo "--- Source files ---"
+        ls -la src/ || echo "src directory not found"
+        echo "--- Include files ---"
+        ls -la include/ || echo "include directory not found"
+    
+    - name: Create directories if needed
+      run: |
+        mkdir -p obj bin
+    
+    - name: Build with Make
+      run: make all
+    
+    - name: List build artifacts
+      run: |
+        echo "--- Object files ---"
+        ls -la obj/ || echo "obj directory empty"
+        echo "--- Binary files ---"
+        ls -la bin/ || echo "bin directory empty"
+    
+    - name: Run the program (with test input)
+      run: |
+        echo "Запуск программы с тестовыми данными..."
+        # Создаем тестовый входной файл
+        cat > test_input.txt << EOF
+        3
+        101
+        Иванов
+        Инженер
+        M
+        2023 5 15
+        24
+        50000
+        102
+        Петрова
+        Бухгалтер
+        F
+        2024 1 20
+        12
+        45000
+        103
+        Сидоров
+        Инженер
+        M
+        2024 2 10
+        6
+        55000
+        Инженер
+        EOF
+        
+        # Запускаем программу с тестовым вводом
+        ./bin/worker < test_input.txt > output.txt
+        
+        # Показываем результат
+        echo "--- Результат работы программы ---"
+        cat output.txt
+        
+    - name: Test output validation
+      run: |
+        echo "Проверка результатов..."
+        if grep -q "Средний срок контракта для должности 'Инженер'" 
+output.txt; then
+          echo "✅ Тест пройден: найден средний срок для инженеров"
+        else
+          echo "❌ Ошибка: не найден средний срок для инженеров"
+          exit 1
+        fi
+        
+        if grep -q "Мужчин:" output.txt && grep -q "Женщин:" output.txt; 
+then
+          echo "✅ Тест пройден: найдена статистика по полу"
+        else
+          echo "❌ Ошибка: не найдена статистика по полу"
+          exit 1
+        fi
+        
+        echo "Все тесты пройдены успешно!"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: worker-program
+        path: |
+          bin/
+          obj/
+        retention-days: 5
